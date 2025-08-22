@@ -37,7 +37,7 @@ pub enum TransferError {
     Disconnected,
 
     /// Hardware issue or protocol violation.
-    Fault,
+    Fault(u32),
 
     /// The request has an invalid argument or is not supported by this OS.
     InvalidArgument,
@@ -57,7 +57,7 @@ impl Display for TransferError {
             TransferError::Cancelled => write!(f, "transfer was cancelled"),
             TransferError::Stall => write!(f, "endpoint stalled"),
             TransferError::Disconnected => write!(f, "device disconnected"),
-            TransferError::Fault => write!(f, "hardware fault or protocol violation"),
+            TransferError::Fault(errno) => write!(f, "hardware fault or protocol violation (errno {errno})"),
             TransferError::InvalidArgument => write!(f, "invalid or unsupported argument"),
             TransferError::Unknown(e) => {
                 write!(f, "unknown (")?;
@@ -76,7 +76,7 @@ impl From<TransferError> for io::Error {
             TransferError::Cancelled => io::Error::new(io::ErrorKind::Interrupted, value),
             TransferError::Stall => io::Error::new(io::ErrorKind::ConnectionReset, value),
             TransferError::Disconnected => io::Error::new(io::ErrorKind::ConnectionAborted, value),
-            TransferError::Fault => io::Error::other(value),
+            TransferError::Fault(_) => io::Error::other(value),
             TransferError::InvalidArgument => io::Error::new(io::ErrorKind::InvalidInput, value),
             TransferError::Unknown(_) => io::Error::other(value),
         }

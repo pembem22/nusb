@@ -40,7 +40,7 @@ fn errno_to_transfer_error(e: Errno) -> TransferError {
         Errno::PIPE => TransferError::Stall,
         Errno::NOENT | Errno::CONNRESET | Errno::TIMEDOUT => TransferError::Cancelled,
         Errno::PROTO | Errno::ILSEQ | Errno::OVERFLOW | Errno::COMM | Errno::TIME => {
-            TransferError::Fault
+            TransferError::Fault(e.raw_os_error() as u32);
         }
         Errno::INVAL => TransferError::InvalidArgument,
         _ => TransferError::Unknown(e.raw_os_error() as u32),
