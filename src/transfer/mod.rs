@@ -65,7 +65,7 @@ pub enum TransferError {
     Disconnected,
 
     /// Hardware issue or protocol violation.
-    Fault,
+    Fault(u32),
 
     /// Unknown or OS-specific error.
     Unknown,
@@ -77,7 +77,7 @@ impl Display for TransferError {
             TransferError::Cancelled => write!(f, "transfer was cancelled"),
             TransferError::Stall => write!(f, "endpoint STALL condition"),
             TransferError::Disconnected => write!(f, "device disconnected"),
-            TransferError::Fault => write!(f, "hardware fault or protocol violation"),
+            TransferError::Fault(errno) => write!(f, "hardware fault or protocol violation (errno {errno})"),
             TransferError::Unknown => write!(f, "unknown error"),
         }
     }
@@ -91,7 +91,7 @@ impl From<TransferError> for io::Error {
             TransferError::Cancelled => io::Error::new(io::ErrorKind::Interrupted, value),
             TransferError::Stall => io::Error::new(io::ErrorKind::ConnectionReset, value),
             TransferError::Disconnected => io::Error::new(io::ErrorKind::ConnectionAborted, value),
-            TransferError::Fault => io::Error::new(io::ErrorKind::Other, value),
+            TransferError::Fault(_) => io::Error::new(io::ErrorKind::Other, value),
             TransferError::Unknown => io::Error::new(io::ErrorKind::Other, value),
         }
     }
